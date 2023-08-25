@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() async {
   tz.initializeTimeZones();
@@ -36,12 +38,44 @@ class _TodoListScreenState extends State<TodoListScreen> {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  late SharedPreferences _prefs;
+
   List<Task> _tasks = [];
 
   @override
   void initState() {
     super.initState();
     initializeNotifications();
+    _loadTask();
+  }
+
+  Future<void> _loadTask() async {
+    _prefs = await SharedPreferences.getInstance();
+    List<String> taskStrings = _prefs.getStringList('tasks') ?? [];
+
+    setState(() {
+      _tasks = taskStrings.map((taskString) {
+        Map<String, dynamic> taskMap = jsonDecode(taskString);
+        return Task(
+          title: taskMap['title'],
+          dueDateTime: DateTime.parse(taskMap['dueDateTime']),
+          isDone: taskMap['isDone'],
+        );
+      }).toList();
+    });
+  }
+
+  Future<void> _saveTask() async {
+    List<String> taskStrings = _tasks.map((task) {
+      Map<String, dynamic> taskMap = {
+        'title': task.title,
+        'dueDateTime': task.dueDateTime.toIso8601String(),
+        'isDone': task.isDone,
+      };
+      return jsonEncode(taskMap);
+    }).toList();
+
+    await _prefs.setStringList('tasks', taskStrings);
   }
 
   Future<void> initializeNotifications() async {
@@ -94,6 +128,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     });
 
     _scheduleDueDateNotification(_tasks.last);
+    _saveTask();
   }
 
   Future<void> _toggleTask(int index) async {
@@ -112,6 +147,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
         _tasks[index].isDone = !_tasks[index].isDone;
       });
     }
+    _saveTask();
   }
 
   @override
@@ -176,8 +212,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  setState(() {
+                                  setState(() async {
                                     _tasks.removeAt(index);
+                                    await _prefs.remove('counter');
                                   });
                                   Navigator.pop(context);
                                 },
