@@ -10,9 +10,14 @@ void main() async {
 class Task {
   late final String title;
   late final DateTime dueDateTime;
+  String category;
   bool isDone;
 
-  Task({required this.title, required this.dueDateTime, this.isDone = false});
+  Task(
+      {required this.title,
+      required this.dueDateTime,
+      this.category = 'single time',
+      this.isDone = false});
 }
 
 class MyApp extends StatelessWidget {

@@ -10,6 +10,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   final _textController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   late TimeOfDay _selectedTime;
+  String _selectedCategory = 'daily';
 
   @override
   void initState() {
@@ -56,6 +57,22 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             controller: _textController,
             decoration: const InputDecoration(labelText: 'Task Name'),
           ),
+          SizedBox(height: 10),
+          DropdownButton<String>(
+            value: _selectedCategory,
+            onChanged: (newValue) {
+              setState(() {
+                _selectedCategory = newValue!;
+              });
+            },
+            items: ['daily', 'single time']
+                .map<DropdownMenuItem<String>>((String category) {
+              return DropdownMenuItem<String>(
+                value: category,
+                child: Text(category),
+              );
+            }).toList(),
+          ),
           const SizedBox(height: 8),
           InkWell(
             onTap: () => _selectDate(context),
@@ -95,6 +112,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               Navigator.pop(context, {
                 'title': _textController.text,
                 'dueDate': _selectedDate,
+                'category': _selectedCategory,
               });
             }
           },
