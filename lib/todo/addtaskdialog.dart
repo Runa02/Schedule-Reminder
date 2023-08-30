@@ -57,21 +57,29 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             controller: _textController,
             decoration: const InputDecoration(labelText: 'Task Name'),
           ),
-          SizedBox(height: 10),
-          DropdownButton<String>(
-            value: _selectedCategory,
-            onChanged: (newValue) {
-              setState(() {
-                _selectedCategory = newValue!;
-              });
-            },
-            items: ['Personal', 'Work', 'Birthday']
-                .map<DropdownMenuItem<String>>((String category) {
-              return DropdownMenuItem<String>(
-                value: category,
-                child: Text(category),
-              );
-            }).toList(),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.category),
+              const SizedBox(width: 10),
+              const Text("Categories:"),
+              const SizedBox(width: 10),
+              DropdownButton<String>(
+                value: _selectedCategory,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCategory = newValue!;
+                  });
+                },
+                items: ['Personal', 'Work', 'Birthday']
+                    .map<DropdownMenuItem<String>>((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           InkWell(

@@ -4,8 +4,13 @@ import 'package:intl/intl.dart';
 class EditTaskDialog extends StatefulWidget {
   final String initialTitle;
   final DateTime initialDueDate;
+  final String initialCategory;
 
-  EditTaskDialog({required this.initialTitle, required this.initialDueDate});
+  const EditTaskDialog(
+      {super.key,
+      required this.initialTitle,
+      required this.initialDueDate,
+      required this.initialCategory});
 
   @override
   _EditTaskDialogState createState() => _EditTaskDialogState();
@@ -16,6 +21,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
   late TextEditingController _textController;
   late DateTime _selectedDate;
   late TimeOfDay _selectedTime;
+  late String _selectedCategory;
 
   @override
   void initState() {
@@ -23,6 +29,7 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
     _textController = TextEditingController(text: widget.initialTitle);
     _selectedDate = widget.initialDueDate;
     _selectedTime = TimeOfDay.fromDateTime(widget.initialDueDate);
+    _selectedCategory = widget.initialCategory;
   }
 
   Future<void> _selectTime(BuildContext context) async {
@@ -65,6 +72,29 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
             decoration: const InputDecoration(labelText: 'Task Name'),
           ),
           const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.category),
+              const SizedBox(width: 10),
+              const Text("Categories:"),
+              const SizedBox(width: 10),
+              DropdownButton<String>(
+                value: _selectedCategory,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCategory = newValue!;
+                  });
+                },
+                items: ['Personal', 'Work', 'Birthday']
+                    .map<DropdownMenuItem<String>>((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
           InkWell(
             onTap: () => _selectDate(context),
             child: Row(
@@ -101,7 +131,8 @@ class _EditTaskDialogState extends State<EditTaskDialog> {
               Navigator.pop(context, {
                 'title': _textController.text,
                 'dueDate': _selectedDate,
-                'dueTime': _selectedTime
+                'dueTime': _selectedTime,
+                'category': _selectedCategory
               });
             }
           },

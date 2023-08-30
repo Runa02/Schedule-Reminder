@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -135,9 +136,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final editedTask = await showDialog(
       context: context,
       builder: (context) => EditTaskDialog(
-        initialTitle: _tasks[index].title,
-        initialDueDate: _tasks[index].dueDateTime,
-      ),
+          initialTitle: _tasks[index].title,
+          initialDueDate: _tasks[index].dueDateTime,
+          initialCategory: _tasks[index].category),
     );
     final combinedDateTime = DateTime(
       editedTask["dueDate"].year,
@@ -151,6 +152,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
       setState(() {
         _tasks[index].title = editedTask['title'];
         _tasks[index].dueDateTime = combinedDateTime;
+        _tasks[index].category = editedTask['category'];
       });
 
       _scheduleDueDateNotification(_tasks[index]);
@@ -165,10 +167,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Color(0xFF6663FA),
+          backgroundColor: const Color(0xFF6663FA),
           bottom: TabBar(
             indicatorSize: TabBarIndicatorSize.label,
-            tabs: [
+            tabs: const [
               Tab(child: Text('All')),
               Tab(child: Text('Personal')),
               Tab(child: Text('Work')),
@@ -187,7 +189,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: 15,
               ),
               // child: DropdownButton<String>(
@@ -213,109 +215,133 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ),
             Expanded(
                 child: Container(
-              padding: const EdgeInsets.only(top: 10),
-              child: ListView.builder(
-                itemCount: _filteredTask().length,
-                itemBuilder: (context, index) {
-                  // ignore: unused_local_variable
-                  final task = _filteredTask()[index];
-                  return Container(
-                    width: 200,
-                    height: 90,
-                    child: Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 3, horizontal: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                      ),
-                      elevation: 3,
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ListTile(
-                            title: Text(
-                              task.title,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
+                    padding: const EdgeInsets.only(top: 10),
+                    child: _filteredTask().isNotEmpty
+                        ? ListView.builder(
+                            itemCount: _filteredTask().length,
+                            itemBuilder: (context, index) {
+                              // ignore: unused_local_variable
+                              final task = _filteredTask()[index];
+
+                              return Container(
+                                width: 200,
+                                height: 90,
+                                child: Card(
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 3, horizontal: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: const BorderSide(
+                                      color: Colors.black,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  elevation: 3,
+                                  color:
+                                      const Color.fromARGB(255, 255, 255, 255),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ListTile(
+                                        title: Text(
+                                          task.title,
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              task.dueDateTime
+                                                  .toString()
+                                                  .replaceAll(':00.000', ''),
+                                              style: const TextStyle(
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            Text(
+                                              task.category, // Display the category
+                                              style: const TextStyle(
+                                                color: Colors.blueAccent,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit,
+                                                  size: 20,
+                                                  color: Color(0xFF6663FA)),
+                                              onPressed: () =>
+                                                  _toggleTask(index),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                size: 20,
+                                                color: Colors.redAccent,
+                                              ),
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    title: const Text(
+                                                        'Delete Task'),
+                                                    content: const Text(
+                                                        'Are you sure you want to delete this task?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context),
+                                                        child: const Text(
+                                                            'Cancel'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _tasks.removeAt(
+                                                                index);
+                                                            _saveTask();
+                                                          });
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text(
+                                                            'Delete'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Padding(
+                            padding: EdgeInsets.only(bottom: 420.0),
+                            child: Text(
+                              "Create new tasks with '+'",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: Color(0xFF6663FA),
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  task.dueDateTime
-                                      .toString()
-                                      .replaceAll(':00.000', ''),
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Text(
-                                  task.category, // Display the category
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      size: 20, color: Color(0xFF6663FA)),
-                                  onPressed: () => _toggleTask(index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    size: 20,
-                                    color: Colors.redAccent,
-                                  ),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Delete Task'),
-                                        content: const Text(
-                                            'Are you sure you want to delete this task?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                _tasks.removeAt(index);
-                                                _saveTask();
-                                              });
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ))
+                          ))))
           ],
         ),
         floatingActionButton: Container(
@@ -323,7 +349,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
           height: 90,
           width: 100,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: ElevatedButton(
               onPressed: () async {
                 final result = await showDialog(
@@ -358,14 +384,14 @@ class _TodoListScreenState extends State<TodoListScreen> {
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
-                  side: BorderSide(
+                  side: const BorderSide(
                     color: Colors.black,
                     width: 1,
                   ),
                 ),
-                primary: Color(0xFF6663FA),
+                backgroundColor: const Color(0xFF6663FA),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [Icon(Icons.add_sharp)],
               ),
