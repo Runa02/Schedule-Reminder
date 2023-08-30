@@ -23,7 +23,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   String _selectedCategory = 'All';
 
+  // final List<String> _categories = ['All', 'Personal', 'Work', 'Birthday'];
+
   List<Task> _tasks = [];
+
   List<Task> _filteredTask() {
     if (_selectedCategory == 'All') {
       return _tasks;
@@ -39,6 +42,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     super.initState();
     initializeNotifications();
     _loadTask();
+    // _selectedCategory.addListener(_handleTabSelection);
   }
 
   Future<void> _loadTask() async {
@@ -157,200 +161,218 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('To-Do List'),
-        backgroundColor: const Color(0xFF6663FA),
-        elevation: 0,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 15,
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Color(0xFF6663FA),
+          bottom: TabBar(
+            indicatorSize: TabBarIndicatorSize.label,
+            tabs: [
+              Tab(child: Text('All')),
+              Tab(child: Text('Personal')),
+              Tab(child: Text('Work')),
+              // Tab(child: Text('Birthday')),
+            ],
+            onTap: (index) {
+              setState(() {
+                _selectedCategory =
+                    index == 0 ? 'All' : ['Personal', 'Work'][index - 1];
+              });
+            },
+          ),
+          title: const Text('To-Do List'),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 15,
+              ),
+              // child: DropdownButton<String>(
+              //     value: _selectedCategory,
+              //     dropdownColor: Colors.black,
+              //     onChanged: (newValue) {
+              //       setState(() {
+              //         _selectedCategory = newValue!;
+              //       });
+              //     },
+              //     items: ['All', 'daily', 'single time']
+              //         .map<DropdownMenuItem<String>>((String category) {
+              //       return DropdownMenuItem<String>(
+              //         value: category,
+              //         child: Text(
+              //           category,
+              //           style: TextStyle(
+              //             color: Colors.white,
+              //           ),
+              //         ),
+              //       );
+              //     }).toList()),
             ),
-            child: DropdownButton<String>(
-                value: _selectedCategory,
-                dropdownColor: Colors.black,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedCategory = newValue!;
-                  });
-                },
-                items: ['All', 'daily', 'single time']
-                    .map<DropdownMenuItem<String>>((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(
-                      category,
-                      style: TextStyle(
-                        color: Colors.white,
+            Expanded(
+                child: Container(
+              padding: const EdgeInsets.only(top: 10),
+              child: ListView.builder(
+                itemCount: _filteredTask().length,
+                itemBuilder: (context, index) {
+                  // ignore: unused_local_variable
+                  final task = _filteredTask()[index];
+                  return Container(
+                    width: 200,
+                    height: 90,
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 3, horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Colors.black,
+                          width: 1,
+                        ),
+                      ),
+                      elevation: 3,
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ListTile(
+                            title: Text(
+                              task.title,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task.dueDateTime
+                                      .toString()
+                                      .replaceAll(':00.000', ''),
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Text(
+                                  task.category, // Display the category
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      size: 20, color: Color(0xFF6663FA)),
+                                  onPressed: () => _toggleTask(index),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    size: 20,
+                                    color: Colors.redAccent,
+                                  ),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Delete Task'),
+                                        content: const Text(
+                                            'Are you sure you want to delete this task?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                _tasks.removeAt(index);
+                                                _saveTask();
+                                              });
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
-                }).toList()),
-          ),
-          Expanded(
-              child: Container(
-            padding: const EdgeInsets.only(top: 10),
-            child: ListView.builder(
-              itemCount: _filteredTask().length,
-              itemBuilder: (context, index) {
-                final task = _filteredTask()[index];
-                // const SizedBox(
-                //   height: ,
-                // );
-                return Container(
-                  width: 200,
-                  height: 90,
-                  child: Card(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 3,
-                    color: const Color.fromARGB(255, 255, 255, 255),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ListTile(
-                          title: Text(
-                            _tasks[index].title,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _tasks[index]
-                                    .dueDateTime
-                                    .toString()
-                                    .replaceAll(':00.000', ''),
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                _tasks[index].category, // Display the category
-                                style: const TextStyle(
-                                  color: Colors.blueAccent,
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit,
-                                    size: 20, color: Color(0xFF6663FA)),
-                                onPressed: () => _toggleTask(index),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  size: 20,
-                                  color: Colors.redAccent,
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Delete Task'),
-                                      content: const Text(
-                                          'Are you sure you want to delete this task?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _tasks.removeAt(index);
-                                              _saveTask();
-                                            });
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ))
-        ],
-      ),
-      floatingActionButton: Container(
-        height: 100,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: ElevatedButton(
-            onPressed: () async {
-              final result = await showDialog(
-                context: context,
-                builder: (context) => AddTaskDialog(),
-              );
-              if (result != null) {
-                final dateResult = await showDatePicker(
+                },
+              ),
+            ))
+          ],
+        ),
+        floatingActionButton: Container(
+          // margin: EdgeInsets.only(top: 500),
+          height: 90,
+          width: 100,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: ElevatedButton(
+              onPressed: () async {
+                final result = await showDialog(
                   context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2101),
+                  builder: (context) => AddTaskDialog(),
                 );
-
-                if (dateResult != null) {
-                  final timeResult = await showTimePicker(
+                if (result != null) {
+                  final dateResult = await showDatePicker(
                     context: context,
-                    initialTime: TimeOfDay.now(),
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2101),
                   );
 
-                  if (timeResult != null) {
-                    _addTask(
-                      result['title'],
-                      dateResult,
-                      timeResult,
-                      result['category'],
+                  if (dateResult != null) {
+                    final timeResult = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
                     );
+
+                    if (timeResult != null) {
+                      _addTask(
+                        result['title'],
+                        dateResult,
+                        timeResult,
+                        result['category'],
+                      );
+                    }
                   }
                 }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              primary: Colors.blue,
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.add_sharp),
-                Text(
-                  'Add New Task',
-                  style: TextStyle(fontSize: 15),
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  side: BorderSide(
+                    color: Colors.black,
+                    width: 1,
+                  ),
                 ),
-              ],
+                primary: Color(0xFF6663FA),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Icon(Icons.add_sharp)],
+              ),
             ),
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

@@ -10,7 +10,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   final _textController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   late TimeOfDay _selectedTime;
-  String _selectedCategory = 'daily';
+  String _selectedCategory = 'Personal';
 
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 _selectedCategory = newValue!;
               });
             },
-            items: ['daily', 'single time']
+            items: ['Personal', 'Work', 'Birthday']
                 .map<DropdownMenuItem<String>>((String category) {
               return DropdownMenuItem<String>(
                 value: category,

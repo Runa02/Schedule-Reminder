@@ -13,11 +13,12 @@ class Task {
   String category;
   bool isDone;
 
-  Task(
-      {required this.title,
-      required this.dueDateTime,
-      this.category = 'single time',
-      this.isDone = false});
+  Task({
+    required this.title,
+    required this.dueDateTime,
+    this.category = 'All',
+    this.isDone = false,
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const TodoListScreen(),
-      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFF353941)),
+      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFFF4F6F8)),
     );
   }
 }

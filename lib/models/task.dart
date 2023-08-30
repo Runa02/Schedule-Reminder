@@ -7,6 +7,6 @@ class Task {
   Task(
       {required this.title,
       required this.dueDateTime,
-      this.category = 'single time',
+      this.category = 'All',
       this.isDone = false});
 }
